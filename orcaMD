@@ -1,0 +1,125 @@
+#!/bin/bash
+
+## Program intended to run ORCA automatically
+#
+## This program takes an input file in .xyz format containing atomic coordinates for a molecule, and runs
+## a molecular dynamics simulation with ORCA. ORCA needs input files in .inp format, so the file.xyz is
+## converted into a file.inp. The output is generated in a file.out format. 
+ 
+# $ALG -> Algorithm to be used (0 by default)
+# $STEP -> Time step in atomic units (10 by default)
+# $NSTEP -> Maximum number of steps (1000 for a proper simulation)
+# $V -> Initial velocities (0 by default)
+# $TERM -> Thermostat to be used (ZERO by default)
+# $Q -> Molecule charge (-2 in case of MgNTPs)
+# $MULTI -> Molecule multiplicity (1 by default)
+# $XYZCOORDS_WITHOUT_HEADER -> Main body of the file: Atomic coordinates (raw coordinates from file; comment header)
+# $INPUTFILE -> Name of input file
+
+
+## First of all, user needs to know how to use this program:
+
+function how_to_use() 
+{
+	echo ""
+	echo "---------------------------------------------------------------"
+	echo "|You need to supply 5 arguments to ORCA, following this order:|"
+	echo "|     orca -i f.xyz -a alg -s step -m maxstep -q charge       |"
+	echo "---------------------------------------------------------------"
+	echo ""
+}
+
+
+
+##------------------------------------------------------------------------------------------------------------------------------------------------
+## 1st thing to do: 
+## 	parse command line, and assign corresponding values to each variable:
+##	-i f.xyz -a alg -s step -m maxstep -q charge
+
+if [ $# -ne 10 ]; then echo "Wrong number of arguments supplied!!"; how_to_use; exit; fi
+if [ $1 == "-i" ]; then INPUTFILE=$2; echo "$INPUTFILE"; fi
+if [ $3 == "-a" ]; then ALG=$4; echo "$ALG";fi
+if [ $5 == "-s" ]; then STEP=$6; echo "$STEP";fi
+if [ $7 == "-m" ]; then NSTEP=$8; echo "$NSTEP";fi
+if [ $9 == "-q" ]; then Q=${10}; echo "$Q";fi
+V="ZERO" # We set initial velocities to 0 by default
+THERMO=0 # We set no use of thermostat by default
+MULTI=1 # We set molecule multiplicity as 1 by default
+
+
+
+##------------------------------------------------------------------------------------------------------------------------------------------------
+## 2nd thing to do:
+## 	check if input file exists:
+
+if [ ! -e $INPUTFILE ]; then echo "Input file supplied does not exits!! Aborting execution"; exit; fi
+
+
+
+##------------------------------------------------------------------------------------------------------------------------------------------------
+## 3rd thing to do:
+## 	extract filename and coordinates:
+
+inp_filename="${INPUTFILE%.*}" # This command extracts the file name, and discards the extension
+inp_extension="${INPUTFILE##*.}"
+if [ "$inp_extension" != "xyz" ]; then echo "The filename has an incorrect format (extension is not .xyz). Please submit an .xyz file."; exit; fi
+XYZ=`cat $INPUTFILE` # "cat" maintains newlines
+
+
+
+##------------------------------------------------------------------------------------------------------------------------------------------------
+## 4th thing to do:
+##	create subdirectory to work in it:
+
+suffix="_orcaMD"
+new_subdir="$inp_filename$suffix"
+if [ -d $new_subdir ]; then echo "--> $new_subdir already exits; its content will be overwritten"; else mkdir $new_subdir; fi
+cp $INPUTFILE $new_subdir
+cd $new_subdir
+
+
+
+##------------------------------------------------------------------------------------------------------------------------------------------------
+## 5th thing to do:
+## 	update each variable (into file) with corresponding value:
+
+suffix=".inp"
+outputfile="$inp_filename$suffix"
+echo "#============================================" > $outputfile
+echo "#  Opt   LooseSCF  HF" >> $outputfile 
+echo "# PrintBasis 3-21G" >> $outputfile 
+echo "#" >> $outputfile
+echo "!HF 3-21G LOOSESCF MD" >> $outputfile
+echo "%md" >> $outputfile
+echo "    MD_Algorithm $ALG" >> $outputfile
+echo "    DT $STEP" >> $outputfile
+echo "    MAXSTEP $NSTEP" >> $outputfile
+echo "    INIT_VELOCITIES $V" >> $outputfile
+echo "    THERMO $THERMO" >> $outputfile
+echo "  end" >> $outputfile
+echo "!COSMO" >> $outputfile
+echo "%cosmo" >> $outputfile
+echo "    SMD true" >> $outputfile
+echo "    Solvent \"WATER\"" >> $outputfile
+echo "  end" >> $outputfile
+echo "%output" >> $outputfile
+echo "    print[p_mos] 1" >> $outputfile
+echo "  end #output" >> $outputfile
+echo "  	 #Q    M" >> $outputfile
+echo "* xyz    $Q    $MULTI" >> $outputfile
+echo "$XYZ" >> $outputfile
+echo "*" >> $outputfile
+
+sed -i "s/^[0-9][0-9]*/#&/" "$outputfile" # After finding 2000 ways of doing this wrong, finally this command updates $outputfile content
+sed -i "s/Mg[A-Z]TP.*/#&/" "$outputfile"
+sed -i "s/XYZ.*/#&/" "$outputfile"
+sed -i -r "s/^([A-Z][a-z]*) *(-*[0-9].[0-9]*) *(-*[0-9].[0-9]*) *(-*[0-9].[0-9]*)/\1 \2 \3 \4/" "$outputfile"
+
+
+##------------------------------------------------------------------------------------------------------------------------------------------------
+## 6th and last thing to do:
+##	call... ORCA:
+
+suffix=".out"
+OrcaOutputFile="$inp_filename$suffix"
+orca $outputfile >& $OrcaOutputFile &
