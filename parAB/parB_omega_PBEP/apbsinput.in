@@ -1,0 +1,26 @@
+read
+    mol pqr 14599416297.pqr
+end
+elec
+    mg-auto
+    dime 97 129 129
+    cglen 55.2245 83.0674 78.2751
+    fglen 52.485 68.8632 66.0442
+    cgcent mol 1
+    fgcent mol 1
+    mol 1
+    npbe
+    bcfl sdh
+    pdie 2
+    sdie 78.54
+    srfm smol
+    chgm spl2
+    sdens 10
+    srad 1.4
+    swin 0.3
+    temp 298.15
+    calcenergy total
+    calcforce no
+    write pot dx 14599416297-pot
+end
+quit

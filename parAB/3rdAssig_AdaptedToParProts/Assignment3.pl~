@@ -1,0 +1,321 @@
+#!perl -w
+
+##--------------------------------------------------------------------------------------------------------------------------------
+## -- 3nd Assignment --
+##
+## By Juan Jiménez Sánchez
+##
+##--------------------------------------------------------------------------------------------------------------------------------
+
+## This program has been designed to find CTTCTT repeats placed in gene exons. It is useful for biologist whose goal is
+## to do a site-directed/insertional mutagenesis, for example. The program works with AGI locus codes. If a list of AGI
+## codes is provided, the program shows which ones does not have the CTTCTT repeat in its sequence. In this case, two
+## different gene sets are used: first, a group of nearly 170 genes of Arabidopsis thaliana, contained in a file called
+## 'ArabidopsisSubNetwork_GeneList.txt'; and second, the AGI locus code of Arabidopsis thaliana gene 'AP3' (apetala 3),
+## contained in a file called 'Apetala3gene_AraTh.txt'.
+##
+## The program workflow is something similar to the following:
+##    1- The AGI locus codes are retrieved from input file.
+##    2- A BioSeq object is created for every AGI locus code.
+##    3- A search is done, looking for CTTCTT repeats in every BioSeq object,
+##       and testing if those repeats are contained into exons.
+##    4- New features are created for every CTTCTT repeat.
+##    5- A gff3 file is created, containing every CTTCTT feature in gff3 format.
+##    6- A report is printed in screen (and in an output file, if desired)
+##       showing which genes does not contain a CTTCTT repeat.
+##    7- Finally, an additional gff3 file is created, with CTTCTT features updated in chromosomic coordinates.
+
+## The 170 gene set is used as the main input for the program. The apetala 3 gene is only used to test how ENSEMBL
+## allows any user to upload his own data, and view it in biological context.
+
+
+
+##--------------------------------------------------------------------------------------------------------------------------------
+## -- Main code --
+##--------------------------------------------------------------------------------------------------------------------------------
+
+
+use strict;
+use warnings;
+use LWP::Simple;
+use Bio::Perl;
+use Bio::Seq;
+use Bio::SeqIO;
+use Bio::Tools::GFF;
+
+unless ($ARGV[0] && $ARGV[1]){ # Unless proper number of arguments is given (a file name containing AGI locus codes,
+                               # and a gff3 file name to store the CTTCTT features created),
+  &how_to_use;     # the program will call a subroutine to show its usage.
+  exit;            # Once the usage is shown, the program stops its execution.
+}
+
+my ($input_filename,$GFF_filename,$output_filename) = @ARGV; # First of all, we store all filenames in variables.
+# Output filename will only be stored in case it is provided; otherwise, $output_filename won't initialize.
+unless (open(INPUT, $input_filename)){ # If input filename doesn't exists, or can not be opened,
+  print "Could not open input file \"$input_filename\"!!\n"; # a message is shown,
+  exit; # and the program ends its execution.
+}
+
+my %gene_list = &process_gene_to_BioSeq(<INPUT>); # We create a gene hash, whose keys correspond to the
+# AGI locus codes provided in the input filename, and whose values are the BioSeq objects created by Bioperl.
+&find_exons_with_CTTCTT(%gene_list); # We search for CTTCTT repeats in every BioSeq object's sequence,
+# and we create a feature for each CTTCTT repeat found.
+&write_gff3(\%gene_list,$GFF_filename); # Then, we create a gff3 file containing every CTTCTT feature found.
+# Note that this gff3 file contains every CTTCTT coordinates in local mode (respect to the gene they were found in).
+&print_report(\%gene_list,$output_filename); # Finally, we print a report, showing which genes from the input file
+# do not have any CTTCTT repeat in its sequence.
+
+# But there is still one thing to do. An additional gff3 file has to be created; but this time, with CTTCTT coordinates
+# in global mode (respect to the chromosome they are in).
+my $chromosomic_way = 1; # So, we create an easy control variable, which will modify some parameters when creating the
+# gff3 file with chromosomic coordinates.
+&write_gff3(\%gene_list,$GFF_filename,$chromosomic_way); # And we make the new gff3 file, passing the previous control
+# variable as an argument.
+
+
+##--------------------------------------------------------------------------------------------------------------------------------
+## -- Subroutines --
+##--------------------------------------------------------------------------------------------------------------------------------
+
+
+
+sub how_to_use { # A small explanation to make this program user-friendly.
+  print "\n------------------------------------------------------------------------------------\n";
+  print "|This program needs at least three argument: the file containing Arabidopsis genes,|\n";
+  print "|         and the desired output file name for the gff3 features file.             |\n";
+  print "|            To call the program properly, type in the terminal:                   |\n";
+  print "|              \"perl Assignment3.pl genefile.txt features.gff3\"                    |\n";
+  print "|You may also create an output file name, in which final report will be written:   |\n";
+  print "|     \"perl Assignment3.pl genefile.txt features.gff3 outputoutputfile.txt\"        |\n";
+  print "------------------------------------------------------------------------------------\n\n";
+  # Note that you have two ways of executing this program:
+  #   1- Without output filename --> The report will be printed just in the screen.
+  #   2- With an output filename --> The report will be printed both in the screen, and in the file supplied.
+}
+
+
+sub process_gene_to_BioSeq { # This sub creates a BioSeq object for every AGI locus code in input file.
+  my (@gene_AGIcodes) = @_; # We start with the list of AGI locus codes from input file.
+  my %gene_list; # This hash will contain both the AGI locus codes (as hash keys)
+                 # and the BioSeq objects created (as hash values).
+  my $gene_seq; # This variable will store the ENSEMBL record fetched for every AGI locus code.
+  my $seqIO; # And this one will contain the Bio::SeqIO object created from the previous record.
+
+  foreach my $AGI_code (@gene_AGIcodes){ # For every AGI locus code in input file:
+    chomp ($AGI_code); # We eliminate the last newline symbol,
+    $gene_seq = get("http://www.ebi.ac.uk/Tools/dbfetch/dbfetch?db=ensemblgenomesgene&format=embl&id=$AGI_code");
+    # we fetch the corresponding ENSEMBL record, using dbfetch,
+    $seqIO = Bio::SeqIO->new( # and, with the previous record, we create a BioSeqIO object:
+      -string => $gene_seq, # with the record as string,
+      -format => 'EMBL' # and EMBL as the format;
+    );
+    $gene_list{$AGI_code} = $seqIO->next_seq; # finally, the BioSeq object is created from the BioSeqIO iterator,
+                                              # and it is stored in the gene hash (with corresponding AGI code as key).
+  }
+
+  return %gene_list; # The gene hash is returned.
+}
+
+
+sub find_exons_with_CTTCTT { # This sub searchs for CTTCTT repeats in exons. The gene set used is the one provided
+                             # by the previous subroutine.
+  my (%gene_list) = @_; # We store the gene hash in a local variable.
+  my @patterns = ("[AT]ATCAC[AT]","[TA]GTGAT[AT]"); # Note that we are interested in CTTCTT repeat, but this pattern will only appear in
+  # the main strand. We also want to search for the pattern in the complementary strand, so we will have to apply DNA rules:
+  # the complementary reverse sequence of 'CTTCTT' is 'AAGAAG'. That's why both patterns are considered.
+  my $sequence;
+  my @features;
+  my $strand;
+  my $fstart;
+  my $fend;             # Here goes some initialization of useful variables that will be explained later.
+  my $fprimary_tag;
+  my $fstrand;
+  my $new_feature;
+
+
+  foreach my $pattern (@patterns){ # We repeat the pattern search twice: for CTTCTT and for AAGAAG repeats.
+    $strand = 1; # Main strand (1) for CTTCTT;
+    foreach my $gene (keys %gene_list){ # Then, foreach BioSeq gene object in our hash:
+      my @start = (); # we reinitialize both start and end arrays. Those will contain every start and end position
+      my @end = (); # for all the patterns found in each gene.
+      $sequence = $gene_list{$gene}->seq; # We store our BioSeq object sequence in a variable.
+      while ($sequence =~/($pattern)/g){ # Every time we found the pattern in our sequence:
+        push (@start,$-[0]+1); # we store the start position in corresponding array,
+        push (@end,$+[0]); # and we do so for the end position.
+      }
+      for (my $i = 0; $i < scalar(@start); $i++){ # Then, foreach start and end position found:
+        @features = $gene_list{$gene}->get_SeqFeatures(); # we store every BioSeq gene features in a variable,
+        foreach my $feature (@features){ # and we iterate along every feature (for every start and end position)
+          $fstart = $feature->start; # we get both start and end positions, but this time for the feature,
+          $fend = $feature->end; # as we are using this positions to compare them with the pattern ones.
+          $fprimary_tag = $feature->tag; # We also get feature's primary tag,
+          $fstrand = $feature->strand; # and feature's strand.
+          if ($fprimary_tag eq "promoter" and $start[$i] >= $fstart and $end[$i] <= $fend){ # Then, if the feature
+          # is an exon, and if the pattern start and end positions are contained into the feature
+          # (pattern start is bigger than feature start, and pattern end is lower than feature end):
+            if ($fstrand == $strand or $fstrand == 0){ # also, if the feature's strand is the same we are searching in:
+              $new_feature = &create_new_feature($start[$i], $end[$i], $fstrand, $gene); # only if all those conditions are
+              # granted, a new feature is created (note that $gene corresponds to the AGI locus code of the gene evaluated).
+              $gene_list{$gene}->add_SeqFeature($new_feature); # and this feature is added to corresponding BioSeq object.
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+
+sub create_new_feature { # This sub creates a BioSeq Feature object.
+  my ($start, $end, $strand, $id) = @_; # It just needs 4 arguments: a starting position, an ending position,
+                                        # a strand type (1 or -1), and a gene ID (AGI locus code in this case).
+
+  my $new_feat = Bio::SeqFeature::Generic->new( # This way of creating a new feature was extracted from:
+                                                # 'http://search.cpan.org/~cjfields/BioPerl-1.6.924/Bio/SeqFeature/Generic.pm'
+    -start        => $start,
+    -end          => $end,
+    -strand       => $strand,
+    -seq_id       => $id,
+    -phase        => 0,
+    -score        => 1000, # A score is supplied as done in CPAN BioSeq Feature documentation, though it is dispensable.
+    -primary_tag  => 'CTTCTT_repeat_in_exon', # The primary tag is coherent with the main goal of the program.
+    -source_tag   => 'BPC_Assignment3', # As the source shows the procedence of the feature, we assign it a reference
+                                        # to the Bioinformatics Programming Challenges course.
+    -display_name => 'CTTCTT repeat found in exon, to insert fragment by directed mutagenesis', # Further info is provided
+  );
+
+  return $new_feat; # The newly created featured is returned.
+}
+
+
+sub write_gff3 { # This sub creates a gff3 file containing every CTTCTT feature previously created.
+  my ($gene_list_ref,$GFF_filename,$chromosomic_way) = @_; # It needs 3 arguments: a gene list (referenced), a gff3 filename,
+                                                           # and a control variable, whose use will be explained later.
+
+  my %gene_list = %$gene_list_ref; # First of all, we dereference the gene list hash reference.
+
+  if ($chromosomic_way){ # Then, we test if the control variable was provided as an argument.
+  # If it is provided, the gff3 file created will contain starting and ending CTTCTT positions in chromosomic coordinates.
+  # If it is not provided, the positions will be in local coordinates (associated to the gene where the pattern is placed).
+  # We have to ensure that a different filename is provided for the "chromosomic way"; otherwise, if we created the local
+  # gff3 file first, the global file will overwrite it.
+    $GFF_filename =~s/(.*)\./$1_ChromosomicCoords\./; # So we change the $GFF_filename variable.
+  }
+
+  # We open the gff3 output file; if it can not be opened, a warning message is shown.
+  open (my $OUTPUT, ">", $GFF_filename) or die "Could not open $GFF_filename to write on it!!\n";
+
+  my $GFF_IO = Bio::Tools::GFF->new( # Then, we create a GFFIO object; the way to do so is shown in:
+                                     # 'http://search.cpan.org/dist/BioPerl/Bio/Tools/GFF.pm'
+
+    #-gff_version => 3 # We specify the version we want for our gff object (gff3).
+  );
+
+  my @features;
+  my $GFF_feature;
+  foreach my $gene (keys %gene_list){ # And then, for evert BioSeq object:
+    @features = $gene_list{$gene}->get_SeqFeatures(); # we get its features,
+    foreach my $feature (@features){ # and we iterate over then.
+      if ($feature->primary_tag eq "CTTCTT_repeat_in_exon"){ # If we found a featured created by us in this program,
+        my $GFF_feature = $GFF_IO->gff_string($feature); # we make a gff3 feature from it.
+        if ($chromosomic_way){ # If "chromosomic way" is enable with corresponding control variable,
+          $GFF_feature = &transform_to_Chromosomic_Coords($GFF_feature,$gene_list{$gene}->accession_number);
+          # The newly created gff3 feature is updated with chromosomic coordinates (and chromosomic IDs too).
+        }
+        print $OUTPUT "$GFF_feature\n"; # Then, every gff3 feature is printed in the gff3 file opened.
+      }
+    }
+  }
+
+  close $OUTPUT; # Finally, we close our gff3 file.
+
+}
+
+
+sub transform_to_Chromosomic_Coords { # This sub transform local coordinates to global (chromosomic) coordinates.
+  # It takes a gff feature, and changes its coordinates, according to the info provided in the accession number
+  # of every BioSeq object from an Arabidopsis gene.
+  my ($GFF_feature,$accession_number) = @_; # We store the arguments into variables.
+
+  my $chromosome_id; # And we declare the variables we are going to use later.
+  my $ChrCoords_start;
+
+  if ($accession_number =~m/\w+\:.+\:(\d)\:(\d+)/){
+
+    # The accession number of a gene has the following aspect --> 'chromosome:TAIR10:2:14524756:14525763:1'
+    # The first number (2) corresponds to the Arabidopsis thaliana chromosome. As Arabidopsis has just 5 five chromosomes,
+    # we expect a single digit number defining the corresponding chromosome. The large numbers after the chromosome correspond
+    # to the starting and ending position of the gene into the chromosome. If we take the starting position of the gene,
+    # and we add this value to the local coordinates of a CTTCTT repeat, we've got the chromosomic coordinates for the repeat.
+
+    $chromosome_id = $1; # So, we store both the chromosome number,
+    $ChrCoords_start = $2; # and the starting coordinates of corresponding gene into the chromosome.
+  }
+
+  my @GFF_content = split (" ",$GFF_feature); # We split the gff feature, and we create an array with each element.
+
+  $GFF_content[0] = $chromosome_id; # Then, we update the ID, writing the chromosome number over the previous gene ID.
+  $GFF_content[3] = $GFF_content[3] + $ChrCoords_start; # We add the gene starting position in the chromosome, to the
+                                                        # CTTCTT starting position into the gene, to get the CTTCTT
+                                                        # starting position into the chromosome.
+  $GFF_content[4] = $GFF_content[4] + $ChrCoords_start; # We do the same for the CTTCTT ending position.
+
+  $GFF_feature = join ("\t", @GFF_content); # And finally, we re-join the gff feature array, with the new content updated.
+
+  return $GFF_feature; # We return the gff feature with the chromosomic coordinates.
+}
+
+
+sub print_report { # This sub prints a report, showing which genes from the file provided do not have a CTTCTT repeat
+                   # in its sequence (that is because we expect a low amount of genes which doesn't have CTTCTT in
+                   # their sequence, so it is shorter to print a report of them, rather than printing which genes
+                   # have CTTCTT in their sequence).
+
+  # The report is always printed in the screen. Additionally, it can also be printed in an output file, if a filename
+  # is supplied.
+  my ($gene_list_ref,$output_filename) = @_; # So we just need one argument: the gene hash. We may also want to supply
+                                             # an output filename.
+  my %gene_list = %$gene_list_ref; # We dereference the gene list hash reference.
+
+  my $to_print; # We declare a control variable, which will determine if report is also printed to a file.
+  my $OUTPUT;
+  my $CLEAR_OUTPUT;
+  if ($output_filename){ # If the output filename was provided as an argument:
+    $to_print = 1; # The control variable gets a value of '1'.
+    open ($CLEAR_OUTPUT, ">", $output_filename); # We open the output file
+    print $CLEAR_OUTPUT ""; # to clear its previous content,
+    close $CLEAR_OUTPUT; # and we close it, to allow opening once again, this time to print the report.
+    open ($OUTPUT, ">>", $output_filename) or die "Could not open $output_filename to write on it!!!";
+  }else{ # If output filename is not provided,
+    $to_print = 0; # control variable value is set to zero.
+  }
+
+  my $counter; # We declare a counter variable.
+  foreach my $gene (keys %gene_list){ # For every BioSeq gene object in our list:
+    $counter = 0; # we set the counter value to zero,
+    my @features = $gene_list{$gene}->get_SeqFeatures(); # and we store BioSeq features into an array.
+    foreach my $feature (@features){ # Then, for every feature of each gene:
+      if ($feature->primary_tag eq "CTTCTT_repeat_in_exon"){ # If the feature has been created in this program for a
+                                                             # CTTCTT repeat,
+        $counter++;                                          # the counter increases by one its value.
+      }
+    }
+    if ($counter == 0){ # After iterating along each feature, if counter value is still equal to zero, that means the
+                        # current gene has no CTTCTT repeats in its sequence.
+      print "\n-----------------------------------------------------\n";
+      print "Gene $gene --> ".$gene_list{$gene}->accession_number."\n"; # Then, a report for this gene is printed,
+      print "\tThis gene has no CTTCTT repeat in its exons's sequence.\n";      # showing that he has no CTTCTT repeats.
+      if ($to_print == 1){ # If the control variable is equal to one:
+        print $OUTPUT "\n-----------------------------------------------------\n";
+        print $OUTPUT "Gene $gene --> ".$gene_list{$gene}->accession_number."\n"; # The previous report is also printed
+        print $OUTPUT "\tThis gene has no CTTCTT repeat in its exons's sequence.\n";      # in the output file.
+      }
+    }
+  }
+
+  if ($to_print == 1){ # Finally, if the output file was supplied:
+    print "\n\n Report also written to file $output_filename.\n\n"; # A friendly message is shown, revealing that
+                                                                    # the report was also printed to the output file,
+    close $OUTPUT;                                                  # and the filehandle is closed.
+  }
+}

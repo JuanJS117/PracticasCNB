@@ -1,0 +1,208 @@
+
+-----------------------------------------------------
+Gene AT2g34430 --> chromosome:TAIR10:2:14524756:14525763:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT1g11850 --> chromosome:TAIR10:1:3999199:3999876:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT4g12830 --> chromosome:TAIR10:4:7531141:7533587:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT1g31330 --> chromosome:TAIR10:1:11214824:11216037:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT1g64500 --> chromosome:TAIR10:1:23953233:23954492:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT1g14150 --> chromosome:TAIR10:1:4839853:4840751:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT1g28330 --> chromosome:TAIR10:1:9933884:9935271:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT4g21210 --> chromosome:TAIR10:4:11306945:11308742:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT5g62280 --> chromosome:TAIR10:5:25017073:25018246:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT3g02730 --> chromosome:TAIR10:3:588408:589685:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT1g30380 --> chromosome:TAIR10:1:10722197:10723247:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT5g43750 --> chromosome:TAIR10:5:17579966:17581222:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT3g28270 --> chromosome:TAIR10:3:10538105:10540024:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT5g48490 --> chromosome:TAIR10:5:19647835:19648281:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT5g22920 --> chromosome:TAIR10:5:7664991:7667265:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT1g78460 --> chromosome:TAIR10:1:29518316:29519323:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT3g47340 --> chromosome:TAIR10:3:17437884:17441243:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT1g52230 --> chromosome:TAIR10:1:19454836:19455668:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT4g02770 --> chromosome:TAIR10:4:1229111:1229945:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT4g33010 --> chromosome:TAIR10:4:15926670:15931332:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT4g12310 --> chromosome:TAIR10:4:7310416:7312577:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT5g64040 --> chromosome:TAIR10:5:25628588:25629615:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT1g54040 --> chromosome:TAIR10:1:20170715:20173949:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT1g68010 --> chromosome:TAIR10:1:25493196:25495988:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT5g48300 --> chromosome:TAIR10:5:19570240:19572804:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT2g13360 --> chromosome:TAIR10:2:5539240:5541358:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT1g29910 --> chromosome:TAIR10:1:10472280:10473299:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT4g28030 --> chromosome:TAIR10:4:13937676:13939144:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT4g27260 --> chromosome:TAIR10:4:13653609:13656204:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT5g01015 --> chromosome:TAIR10:5:5256:5891:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT2g21210 --> chromosome:TAIR10:2:9085210:9085909:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT4g33660 --> chromosome:TAIR10:4:16167286:16167951:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT1g72610 --> chromosome:TAIR10:1:27339114:27340044:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT4g27030 --> chromosome:TAIR10:4:13571921:13573070:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT5g58260 --> chromosome:TAIR10:5:23560876:23561944:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT3g05730 --> chromosome:TAIR10:3:1695976:1696708:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT3g46780 --> chromosome:TAIR10:3:17228673:17231201:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT2g33830 --> chromosome:TAIR10:2:14309484:14310351:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT1g78370 --> chromosome:TAIR10:1:29484269:29485290:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT3g61260 --> chromosome:TAIR10:3:22675238:22676788:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT4g17090 --> chromosome:TAIR10:4:9604962:9607334:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT1g29660 --> chromosome:TAIR10:1:10371839:10373766:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT1g74730 --> chromosome:TAIR10:1:28078857:28079987:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT2g01890 --> chromosome:TAIR10:2:396768:399208:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT1g13930 --> chromosome:TAIR10:1:4761012:4762666:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT2g26740 --> chromosome:TAIR10:2:11392965:11394279:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT2g34420 --> chromosome:TAIR10:2:14522524:14523568:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT1g03130 --> chromosome:TAIR10:1:753307:754198:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT4g37800 --> chromosome:TAIR10:4:17775474:17777397:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT1g29920 --> chromosome:TAIR10:1:10474784:10475959:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT1g29395 --> chromosome:TAIR10:1:10288197:10289621:1
+	This gene has no CTTCTT repeat in its sequence.
+
+-----------------------------------------------------
+Gene AT2g38210 --> chromosome:TAIR10:2:16007012:16007690:1
+	This gene has no CTTCTT repeat in its sequence.
