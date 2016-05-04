@@ -15,31 +15,59 @@ function usage()
 
 }
 
+function quickcp()
+{
+    # if the origin file does not exist, do nothing
+    if [ ! -e $1 ] ; then echo "$1 does  not exist!" ; fi
+    # if the destination is not a directory
+    if [ ! -d $2 ] ; then
+        # if the destination file does not exits, copy 
+        if [ ! -e $2 ] ; then
+            cp $1 $2
+        # if the destination exists, do nothing
+        else
+            echo "$2 exists!"
+        fi
+    # if the destination is a directory
+    else
+        # if the destination file does not exist, copy
+        if [ ! -e $2/`basename $1` ] ; then
+            cp $1 $2
+        # if it does exist, do nothing
+        else
+            echo $2/`basename $1` "exists!"
+        fi
+    fi
+}
 
-if [ $# -ne 6 ]; then echo "Wrong number of arguments supplied!!"; usage(); exit; fi
+if [ $# -ne 6 ]; then echo "Wrong number of arguments supplied!!"; usage; exit; fi
 if [ $1 == "-r" ]; then REF_EMBL_FILE=$2; echo "$REF_EMBL_FILE"; fi
 if [ $3 == "-i" ]; then QUERY_FASTA_FILE=$4; echo "$QUERY_FASTA_FILE"; fi
 if [ $5 == "-m" ]; then RATT_MODE=$6; echo "$RATT_MODE"; fi
 
-if [$RATT_MODE != 'Assembly']; then echo 'Only Assembly mode is implemented in current version'; exit; fi
+if [ $RATT_MODE != 'Assembly' ]; then echo 'Only Assembly mode is implemented in current version'; exit; fi
 
 echo "Would you like to erase all files created by RATT after program execution? (y/n) --> "
 read erase 
 
 TRIAL_DIR="trial_dir"
 mkdir -p $TRIAL_DIR
-cp $REF_EMBL_FILE $TRIAL_DIR
-cp $QUERY_FASTA_FILE $TRIAL_DIR
-cp ReadCoords003.py $TRIAL_DIR
+quickcp $REF_EMBL_FILE $TRIAL_DIR
+quickcp $QUERY_FASTA_FILE $TRIAL_DIR
+quickcp ReadCoords003.py $TRIAL_DIR
+cp ratt/* $TRIAL_DIR
 cd $TRIAL_DIR
+
+RATT_HOME=/home/freebit/mnt/lafdez241/epec/consensus/annotated/$TRIAL_DIR
+export RATT_HOME
 
 if [ ! $RATT_MODE ]; then RATT_MODE="Assembly"; fi
 
 EMBL_dir="embl"
-mkdir -p $EMBL_dir
-cp $REF_EMBL_FILE $EMBL_dir
+if [ ! -d $EMBL_dir ] ; then mkdir -p $EMBL_dir ; fi
 
-ratt embl $QUERY_FASTA_FILE annotated $RATT_MODE
+quickcp $REF_EMBL_FILE $EMBL_dir
+bash start.ratt.sh embl $QUERY_FASTA_FILE annotated $RATT_MODE
 
 REF_EMBL_FILENAME="${REF_EMBL_FILE%.*}"
 CREATED_FILE="annotated.$REF_EMBL_FILENAME.NOTTransfered.embl"
@@ -50,7 +78,7 @@ EXCEL_FILE="annotated.$REF_EMBL_FILENAME.NOTTransfered.xls"
 python2.7 ReadCoords003.py $CREATED_FILE > $EXCEL_FILE
 echo "$EXCEL_FILE created"
 
-cp $EXCEL_FILE ..
+quickcp $EXCEL_FILE ..
 echo "$EXCEL_FILE copied back to working directory"
 cd ..
 if [ $erase == 'y' ]; then rm -rf $TRIAL_DIR; fi 
